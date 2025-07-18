@@ -462,7 +462,7 @@ CommandHandler.RegisterCommand("unban", args => { return BanLists.HandleUnbanCom
 
 CommandHandler.RegisterCommand("send", args =>
 {
-    const string optionUsage = "Usage: send <stage> <entrance> <scenario[-1..127]> <player/\\*>";
+    const string optionUsage = "Usage: send <stage> <entrance> <scenario[-1..127]> <player/*>";
     if (args.Length < 4)
     {
         return optionUsage;
