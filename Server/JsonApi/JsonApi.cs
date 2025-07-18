@@ -29,13 +29,14 @@ public static class JsonApi
         // check if it is enabled
         if (!Settings.Instance.JsonApi.Enabled)
         {
+            server.Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
             return false;
         }
 
         // check packet type
         if ((ushort)header.Type != JsonApi.PACKET_TYPE)
         {
-            JsonApi.Logger.NotifyJsonAPI($"Accepted connection for client {socket.RemoteEndPoint}");
+            server.Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
             return false;
         }
 
@@ -43,9 +44,13 @@ public static class JsonApi
         string headerStr = Encoding.UTF8.GetString(memory.Memory.Span[..Constants.HeaderSize].ToArray());
         if (headerStr != JsonApi.PREAMBLE)
         {
-            JsonApi.Logger.NotifyJsonAPI($"Accepted connection for client {socket.RemoteEndPoint}");
+            server.Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
             return false;
         }
+
+        if ((ushort)header.Type == JsonApi.PACKET_TYPE && headerStr == JsonApi.PREAMBLE)
+            JsonApi.Logger.NotifyJsonAPI($"Received API request from {socket.RemoteEndPoint}.");
+
 
         Context ctx = new Context(server, socket);
 

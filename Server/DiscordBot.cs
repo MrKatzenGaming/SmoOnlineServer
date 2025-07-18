@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Reactive;
+using Discord;
 using Discord.Commands;
 using Discord.Net;
 using Discord.WebSocket;
@@ -14,6 +15,14 @@ public class DiscordBot
     private DiscordSocketClient? client = null;
     private SocketTextChannel? logChannel = null;
     private bool firstInitTriggered = false;
+
+    private EmbedBuilder CmdEmbed = new EmbedBuilder()
+    {
+        Title = "Command Response",
+        Description = ""
+    }.WithCurrentTimestamp();
+
+    private EmbedBuilder LogEmbed = new EmbedBuilder().WithCurrentTimestamp();
 
     //check how this works with neither, one or the other, or both channels set.
 
@@ -160,6 +169,28 @@ public class DiscordBot
         {
             try
             {
+                LogEmbed.WithTitle(level);
+                LogEmbed.WithAuthor(source);
+                // switch (color)
+                // {
+                //     //I looked into other hacky methods of doing more colors, the rest seemed unreliable.
+                //     default:
+                //         foreach (string mesg in SplitMessage(Logger.PrefixNewLines(text, $"{level} [{source}]"), 1994)) //room for 6 '`'
+                //             await logChannel.SendMessageAsync($"```{mesg}```");
+                //         break;
+                //     case ConsoleColor.Yellow: //this is actually light blue now (discord changed it awhile ago).
+                //         foreach (string mesg in SplitMessage(Logger.PrefixNewLines(text, $"{level} [{source}]"), 1990)) //room for 6 '`', "fix" and "\n"
+                //             await logChannel.SendMessageAsync($"```fix\n{mesg}```");
+                //         break;
+                //     case ConsoleColor.Red:
+                //         foreach (string mesg in SplitMessage(Logger.PrefixNewLines(text, $"-{level} [{source}]"), 1989)) //room for 6 '`', "diff" and "\n"
+                //             await logChannel.SendMessageAsync($"```diff\n{mesg}```");
+                //         break;
+                //     case ConsoleColor.Green:
+                //         foreach (string mesg in SplitMessage(Logger.PrefixNewLines(text, $"+{level} [{source}]"), 1989)) //room for 6 '`', "diff" and "\n"
+                //             await logChannel.SendMessageAsync($"```diff\n{mesg}```");
+                //         break;
+                // }
                 switch (color)
                 {
                     //I looked into other hacky methods of doing more colors, the rest seemed unreliable.
@@ -168,18 +199,23 @@ public class DiscordBot
                             await logChannel.SendMessageAsync($"```{mesg}```");
                         break;
                     case ConsoleColor.Yellow: //this is actually light blue now (discord changed it awhile ago).
-                        foreach (string mesg in SplitMessage(Logger.PrefixNewLines(text, $"{level} [{source}]"), 1990)) //room for 6 '`', "fix" and "\n"
-                            await logChannel.SendMessageAsync($"```fix\n{mesg}```");
+                        foreach (string mesg in SplitMessage(text, 4096))
+                            await logChannel.SendMessageAsync(embed: LogEmbed.WithDescription(mesg).WithColor(Color.Gold).Build());
                         break;
                     case ConsoleColor.Red:
-                        foreach (string mesg in SplitMessage(Logger.PrefixNewLines(text, $"-{level} [{source}]"), 1989)) //room for 6 '`', "diff" and "\n"
-                            await logChannel.SendMessageAsync($"```diff\n{mesg}```");
+                        foreach (string mesg in SplitMessage(text, 4096))
+                            await logChannel.SendMessageAsync(embed: LogEmbed.WithDescription(mesg).WithColor(Color.Red).Build());
                         break;
                     case ConsoleColor.Green:
-                        foreach (string mesg in SplitMessage(Logger.PrefixNewLines(text, $"+{level} [{source}]"), 1989)) //room for 6 '`', "diff" and "\n"
-                            await logChannel.SendMessageAsync($"```diff\n{mesg}```");
+                        foreach (string mesg in SplitMessage(text, 4096))
+                            await logChannel.SendMessageAsync(embed: LogEmbed.WithDescription(mesg).WithColor(Color.Green).Build());
+                        break;
+                    case ConsoleColor.Blue:
+                        foreach (string mesg in SplitMessage(text, 4096))
+                            await logChannel.SendMessageAsync(embed: LogEmbed.WithDescription(mesg).WithColor(Color.Blue).Build());
                         break;
                 }
+
             }
             catch (Exception e)
             {
@@ -221,8 +257,19 @@ public class DiscordBot
                     {
                         logger.Info($"\"{arg.Author.Username}\" ran the command: \"{message}\" via discord");
                     }
-                    foreach (string mesg in SplitMessage(resp))
-                        await (arg as SocketUserMessage).ReplyAsync(mesg);
+
+
+                    foreach (string mesg in SplitMessage(resp, 4096))
+                    {
+                        CmdEmbed.Description = mesg.Replace(" ", "\u1CBC").Replace("*", "\\*");
+                        await (arg as SocketUserMessage).ReplyAsync(embed: CmdEmbed.Build(), allowedMentions: AllowedMentions.None);
+                    }
+
+                    // foreach (string mesg in SplitMessage(resp))
+                    // {
+                    //     await (arg as SocketUserMessage).ReplyAsync(mesg.Replace("*", "\\*"), allowedMentions: AllowedMentions.None);
+                    // }
+
                 }
             }
             catch (Exception e)

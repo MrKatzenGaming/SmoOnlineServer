@@ -462,7 +462,7 @@ CommandHandler.RegisterCommand("unban", args => { return BanLists.HandleUnbanCom
 
 CommandHandler.RegisterCommand("send", args =>
 {
-    const string optionUsage = "Usage: send <stage> <entrance> <scenario[-1..127]> <player/*>";
+    const string optionUsage = "Usage: send <stage> <entrance> <scenario[-1..127]> <player/\\*>";
     if (args.Length < 4)
     {
         return optionUsage;
@@ -557,10 +557,10 @@ CommandHandler.RegisterCommand("scenario", args =>
 CommandHandler.RegisterCommand("tag", args =>
 {
     const string optionUsage =
-        $@"Valid options:
-        time <user/*> <minutes[0-65535]> <seconds[0-59]>
-        seeking <user/*> [true/false]
-        start <time> <seekers>";
+    @"Valid options:
+    time <user/*> <minutes[0-65535]> <seconds[0-59]>
+    seeking <user/*> [true/false]
+    start <time> <seekers>";
     if (args.Length < 3)
         return optionUsage;
     switch (args[0])
@@ -684,12 +684,12 @@ CommandHandler.RegisterCommand("list",
 CommandHandler.RegisterCommand("flip", args =>
 {
     const string optionUsage =
-        $@"Valid options:
-        list
-        add <user id>
-        remove <user id>
-        set <true/false>
-        pov <both/self/others>";
+    @"Valid options:
+    list
+    add <user id>
+    remove <user id>
+    set <true/false>
+    pov <both/self/others>";
     if (args.Length < 1)
         return optionUsage;
     switch (args[0])
@@ -750,14 +750,14 @@ CommandHandler.RegisterCommand("flip", args =>
 CommandHandler.RegisterCommand("shine", args =>
 {
     const string optionUsage =
-    $@"Valid options:
+    @"Valid options:
     list
     clear
     sync
     send <ShineID> <player/*>
     set [true/false]
     include <ShineID>
-    exclude<ShineID>";
+    exclude <ShineID>";
     if (args.Length < 1)
         return optionUsage;
     switch (args[0])

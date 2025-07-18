@@ -33,7 +33,7 @@ public class Server
                 Socket socket = token.HasValue ? await serverSocket.AcceptAsync(token.Value) : await serverSocket.AcceptAsync();
                 socket.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
 
-                Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
+                // Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
 
                 // start sub thread to handle client
                 try

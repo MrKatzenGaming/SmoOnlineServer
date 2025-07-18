@@ -14,7 +14,7 @@ public class Logger
     public void Notify(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.Green);
     public void NotifyRed(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.Red);
 
-    public void NotifyJsonAPI(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.Yellow);
+    public void NotifyJsonAPI(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.Blue);
 
     public void Info(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.White);
 
