@@ -35,7 +35,7 @@ public static class JsonApi
         // check packet type
         if ((ushort)header.Type != JsonApi.PACKET_TYPE)
         {
-            server.Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
+            JsonApi.Logger.NotifyJsonAPI($"Accepted connection for client {socket.RemoteEndPoint}");
             return false;
         }
 
@@ -43,7 +43,7 @@ public static class JsonApi
         string headerStr = Encoding.UTF8.GetString(memory.Memory.Span[..Constants.HeaderSize].ToArray());
         if (headerStr != JsonApi.PREAMBLE)
         {
-            server.Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
+            JsonApi.Logger.NotifyJsonAPI($"Accepted connection for client {socket.RemoteEndPoint}");
             return false;
         }
 
@@ -52,7 +52,7 @@ public static class JsonApi
         // not if there were too many failed attempts in the past
         if (BlockClients.IsBlocked(ctx))
         {
-            JsonApi.Logger.Info($"Rejected blocked client {socket.RemoteEndPoint}.");
+            JsonApi.Logger.NotifyJsonAPI($"Rejected blocked client {socket.RemoteEndPoint}.");
             return true;
         }
 
