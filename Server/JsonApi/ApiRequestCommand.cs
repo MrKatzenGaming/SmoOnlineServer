@@ -1,13 +1,17 @@
 namespace Server.JsonApi;
 
-public static class ApiRequestCommand {
-    public static async Task<bool> Send(Context ctx) {
-        if (!ctx.HasPermission("Commands")) {
+public static class ApiRequestCommand
+{
+    public static async Task<bool> Send(Context ctx)
+    {
+        if (!ctx.HasPermission("Commands"))
+        {
             await Response.Send(ctx, "Error: Missing Commands permission.");
             return true;
         }
 
-        if (!ApiRequestCommand.IsValid(ctx)) {
+        if (!ApiRequestCommand.IsValid(ctx))
+        {
             return false;
         }
 
@@ -15,7 +19,8 @@ public static class ApiRequestCommand {
         string command = input.Split(" ")[0];
 
         // help doesn't need permissions and is invidualized to the token
-        if (command == "help") {
+        if (command == "help")
+        {
             List<string> commands = new List<string>();
             commands.Add("help");
             commands.AddRange(
@@ -31,7 +36,8 @@ public static class ApiRequestCommand {
         }
 
         // no permissions
-        if (! ctx.HasPermission($"Commands/{command}")) {
+        if (!ctx.HasPermission($"Commands/{command}"))
+        {
             await Response.Send(ctx, $"Error: Missing Commands/{command} permission.");
             return true;
         }
@@ -43,15 +49,18 @@ public static class ApiRequestCommand {
     }
 
 
-    private static bool IsValid(Context ctx) {
+    private static bool IsValid(Context ctx)
+    {
         var command = ctx.request!.GetData();
 
-        if (command == null) {
+        if (command == null)
+        {
             JsonApi.Logger.Warn($"[Commands] Invalid request Data is \"null\" or missing and not a \"System.String\" from {ctx.socket.RemoteEndPoint}.");
             return false;
         }
 
-        if (command.GetType() != typeof(string)) {
+        if (command.GetType() != typeof(string))
+        {
             JsonApi.Logger.Warn($"[Commands] Invalid request Data is \"{command.GetType()}\" and not a \"System.String\" from {ctx.socket.RemoteEndPoint}.");
             return false;
         }
@@ -60,7 +69,8 @@ public static class ApiRequestCommand {
     }
 
 
-    private class Response {
+    private class Response
+    {
         public string[]? Output { get; set; }
 
 

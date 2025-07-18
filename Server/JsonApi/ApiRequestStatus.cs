@@ -9,11 +9,14 @@ namespace Server.JsonApi;
 
 using Mutators = Dictionary<string, Action<dynamic, Client>>;
 
-public static class ApiRequestStatus {
-    public static async Task<bool> Send(Context ctx) {
-        StatusResponse resp = new StatusResponse {
+public static class ApiRequestStatus
+{
+    public static async Task<bool> Send(Context ctx)
+    {
+        StatusResponse resp = new StatusResponse
+        {
             Settings = ApiRequestStatus.GetSettings(ctx),
-            Players  = Player.GetPlayers(ctx),
+            Players = Player.GetPlayers(ctx),
         };
         await ctx.Send(resp);
         return true;
@@ -34,18 +37,20 @@ public static class ApiRequestStatus {
         var has_results = false;
 
         // copy all allowed Settings
-        foreach (string allowedSetting in allowedSettings) {
+        foreach (string allowedSetting in allowedSettings)
+        {
             string lastKey = "";
-            dynamic?  next = settings;
-            dynamic  input = Settings.Instance;
+            dynamic? next = settings;
+            dynamic input = Settings.Instance;
             IDictionary<string, object> output = settings;
 
             // recursively go down the path
-            foreach (string key in allowedSetting.Split("/")) {
+            foreach (string key in allowedSetting.Split("/"))
+            {
                 lastKey = key;
 
                 if (next == null) { break; }
-                output = (IDictionary<string, object>) next;
+                output = (IDictionary<string, object>)next;
 
                 // create the sublayer
                 if (!output.ContainsKey(key)) { output.Add(key, new ExpandoObject()); }
@@ -55,21 +60,23 @@ public static class ApiRequestStatus {
 
                 // traverse down the Settings object
                 var prop = input.GetType().GetProperty(key);
-                if (prop == null) {
+                if (prop == null)
+                {
                     JsonApi.Logger.Warn($"Property \"{allowedSetting}\" doesn't exist on the Settings object. This is probably a misconfiguration in the settings.json");
                     goto next;
                 }
-                input  = prop.GetValue(input, null);
+                input = prop.GetValue(input, null);
             }
 
-            if (lastKey != "") {
+            if (lastKey != "")
+            {
                 // copy key with the actual value
                 output.Remove(lastKey);
                 output.Add(lastKey, input);
                 has_results = true;
             }
 
-            next:;
+        next:;
         }
 
         if (!has_results) { return null; }
@@ -77,43 +84,50 @@ public static class ApiRequestStatus {
     }
 
 
-    private class StatusResponse {
+    private class StatusResponse
+    {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public dynamic? Settings { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public dynamic[]? Players  { get; set; }
+        public dynamic[]? Players { get; set; }
     }
 
 
-    private static class Player {
-        private static Mutators Mutators = new Mutators {
-            ["Status/Players/ID"]       = (dynamic p, Client c) => p.ID       = c.Id,
-            ["Status/Players/Name"]     = (dynamic p, Client c) => p.Name     = c.Name,
+    private static class Player
+    {
+        private static Mutators Mutators = new Mutators
+        {
+            ["Status/Players/ID"] = (dynamic p, Client c) => p.ID = c.Id,
+            ["Status/Players/Name"] = (dynamic p, Client c) => p.Name = c.Name,
             ["Status/Players/GameMode"] = (dynamic p, Client c) => p.GameMode = Player.GetGameMode(c),
-            ["Status/Players/Kingdom"]  = (dynamic p, Client c) => p.Kingdom  = Player.GetKingdom(c),
-            ["Status/Players/Stage"]    = (dynamic p, Client c) => p.Stage    = Player.GetGamePacket(c)?.Stage ?? null,
+            ["Status/Players/Kingdom"] = (dynamic p, Client c) => p.Kingdom = Player.GetKingdom(c),
+            ["Status/Players/Stage"] = (dynamic p, Client c) => p.Stage = Player.GetGamePacket(c)?.Stage ?? null,
             ["Status/Players/Scenario"] = (dynamic p, Client c) => p.Scenario = Player.GetGamePacket(c)?.ScenarioNum ?? null,
             ["Status/Players/Position"] = (dynamic p, Client c) => p.Position = Position.FromVector3(Player.GetPlayerPacket(c)?.Position ?? null),
             ["Status/Players/Rotation"] = (dynamic p, Client c) => p.Rotation = Rotation.FromQuaternion(Player.GetPlayerPacket(c)?.Rotation ?? null),
-            ["Status/Players/Tagged"]   = (dynamic p, Client c) => p.Tagged   = Player.GetTagged(c),
-            ["Status/Players/Costume"]  = (dynamic p, Client c) => p.Costume  = Costume.FromClient(c),
-            ["Status/Players/Capture"]  = (dynamic p, Client c) => p.Capture  = Player.GetCapture(c),
-            ["Status/Players/Is2D"]     = (dynamic p, Client c) => p.Is2D     = Player.GetGamePacket(c)?.Is2d ?? null,
-            ["Status/Players/IPv4"]     = (dynamic p, Client c) => p.IPv4     = (c.Socket?.RemoteEndPoint as IPEndPoint)?.Address.ToString(),
+            ["Status/Players/Tagged"] = (dynamic p, Client c) => p.Tagged = Player.GetTagged(c),
+            ["Status/Players/Costume"] = (dynamic p, Client c) => p.Costume = Costume.FromClient(c),
+            ["Status/Players/Capture"] = (dynamic p, Client c) => p.Capture = Player.GetCapture(c),
+            ["Status/Players/Is2D"] = (dynamic p, Client c) => p.Is2D = Player.GetGamePacket(c)?.Is2d ?? null,
+            ["Status/Players/IPv4"] = (dynamic p, Client c) => p.IPv4 = (c.Socket?.RemoteEndPoint as IPEndPoint)?.Address.ToString(),
         };
 
 
-        public static dynamic[]? GetPlayers(Context ctx) {
-            if (!ctx.HasPermission("Status/Players"))  { return null; }
+        public static dynamic[]? GetPlayers(Context ctx)
+        {
+            if (!ctx.HasPermission("Status/Players")) { return null; }
             return ctx.server.ClientsConnected.Select((Client c) => Player.FromClient(ctx, c)).ToArray();
         }
 
 
-        private static dynamic FromClient(Context ctx, Client c) {
+        private static dynamic FromClient(Context ctx, Client c)
+        {
             dynamic player = new ExpandoObject();
-            foreach (var (perm, mutate) in Mutators) {
-                if (ctx.HasPermission(perm))  {
+            foreach (var (perm, mutate) in Mutators)
+            {
+                if (ctx.HasPermission(perm))
+                {
                     mutate(player, c);
                 }
             }
@@ -121,55 +135,62 @@ public static class ApiRequestStatus {
         }
 
 
-        private static GamePacket? GetGamePacket(Client c) {
+        private static GamePacket? GetGamePacket(Client c)
+        {
             object? lastGamePacket = null;
             c.Metadata.TryGetValue("lastGamePacket", out lastGamePacket);
             if (lastGamePacket == null) { return null; }
-            return (GamePacket) lastGamePacket;
+            return (GamePacket)lastGamePacket;
         }
 
 
-        private static PlayerPacket? GetPlayerPacket(Client c) {
+        private static PlayerPacket? GetPlayerPacket(Client c)
+        {
             object? lastPlayerPacket = null;
             c.Metadata.TryGetValue("lastPlayerPacket", out lastPlayerPacket);
             if (lastPlayerPacket == null) { return null; }
-            return (PlayerPacket) lastPlayerPacket;
+            return (PlayerPacket)lastPlayerPacket;
         }
 
 
-        private static GameMode? GetGameMode(Client c) {
+        private static GameMode? GetGameMode(Client c)
+        {
             object? gamemode = null;
             c.Metadata.TryGetValue("gameMode", out gamemode);
-            return (GameMode?) gamemode;
+            return (GameMode?)gamemode;
         }
 
 
-        private static bool? GetTagged(Client c) {
+        private static bool? GetTagged(Client c)
+        {
             object? seeking = null;
             c.Metadata.TryGetValue("seeking", out seeking);
-            return (bool?) seeking;
+            return (bool?)seeking;
         }
 
 
-        private static string? GetCapture(Client c) {
+        private static string? GetCapture(Client c)
+        {
             object? lastCapturePacket = null;
             c.Metadata.TryGetValue("lastCapturePacket", out lastCapturePacket);
             if (lastCapturePacket == null) { return null; }
-            CapturePacket p = (CapturePacket) lastCapturePacket;
+            CapturePacket p = (CapturePacket)lastCapturePacket;
             if (p.ModelName == "") { return null; }
             return p.ModelName;
         }
 
 
-        private static string? GetKingdom(Client c) {
+        private static string? GetKingdom(Client c)
+        {
             string? stage = Player.GetGamePacket(c)?.Stage ?? null;
             if (stage == null) { return null; }
 
             Stages.Stage2Alias.TryGetValue(stage, out string? alias);
             if (alias == null) { return null; }
 
-            if (Stages.Alias2Kingdom.Contains(alias)) {
-                return (string?) Stages.Alias2Kingdom[alias];
+            if (Stages.Alias2Kingdom.Contains(alias))
+            {
+                return (string?)Stages.Alias2Kingdom[alias];
             }
 
             return null;
@@ -177,61 +198,70 @@ public static class ApiRequestStatus {
     }
 
 
-    private class Costume {
-        public string Cap  { get; private set; }
+    private class Costume
+    {
+        public string Cap { get; private set; }
         public string Body { get; private set; }
 
 
-        private Costume(CostumePacket p) {
-            this.Cap  = p.CapName;
+        private Costume(CostumePacket p)
+        {
+            this.Cap = p.CapName;
             this.Body = p.BodyName;
         }
 
 
-        public static Costume? FromClient(Client c) {
+        public static Costume? FromClient(Client c)
+        {
             if (c.CurrentCostume == null) { return null; }
-            CostumePacket p = (CostumePacket) c.CurrentCostume!;
+            CostumePacket p = (CostumePacket)c.CurrentCostume!;
             return new Costume(p);
         }
     }
 
 
-    private class Position {
+    private class Position
+    {
         public float X { get; private set; }
         public float Y { get; private set; }
         public float Z { get; private set; }
 
 
-        private Position(float X, float Y, float Z) {
+        private Position(float X, float Y, float Z)
+        {
             this.X = X;
             this.Y = Y;
             this.Z = Z;
         }
 
-        public static Position? FromVector3(Vector3? pos) {
+        public static Position? FromVector3(Vector3? pos)
+        {
             if (pos == null) { return null; }
-            Vector3 p = (Vector3) pos;
+            Vector3 p = (Vector3)pos;
             return new Position(p.X, p.Y, p.Z);
         }
     }
 
 
-    private class Rotation {
+    private class Rotation
+    {
         public float W { get; private set; }
         public float X { get; private set; }
         public float Y { get; private set; }
         public float Z { get; private set; }
 
-        private Rotation(float W, float X, float Y, float Z) {
+        private Rotation(float W, float X, float Y, float Z)
+        {
             this.W = W;
             this.X = X;
             this.Y = Y;
             this.Z = Z;
         }
 
-        public static Rotation? FromQuaternion(Quaternion? quat) {
+        public static Rotation? FromQuaternion(Quaternion? quat)
+        {
             if (quat == null) { return null; }
-            Quaternion q = (Quaternion) quat;
+            Quaternion q = (Quaternion)quat;
             return new Rotation(q.W, q.X, q.Y, q.Z);
         }
     }

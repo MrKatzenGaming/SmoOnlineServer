@@ -72,7 +72,7 @@ public class DiscordBot
                 LogLevel = LogSeverity.Warning
             });
 
-        client.Log += async (a) => await Task.Run(() => 
+        client.Log += async (a) => await Task.Run(() =>
         {
             //as time goes on, we may encounter logged info that we literally don't care about. Fill out an if statement to properly
             //filter it out to avoid logging it to discord.

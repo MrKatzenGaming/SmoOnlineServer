@@ -2,14 +2,17 @@
 
 namespace Shared;
 
-public class Logger {
-    public Logger(string name) {
+public class Logger
+{
+    public Logger(string name)
+    {
         Name = name;
     }
 
     public string Name { get; set; }
 
     public void Notify(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.Green);
+    public void NotifyRed(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.Red);
 
     public void Info(string text) => Handler?.Invoke(Name, "Info", text, ConsoleColor.White);
 
@@ -19,7 +22,8 @@ public class Logger {
 
     public void Error(Exception error) => Error(error.ToString());
 
-    public static string PrefixNewLines(string text, string prefix) {
+    public static string PrefixNewLines(string text, string prefix)
+    {
         StringBuilder builder = new StringBuilder();
         foreach (string str in text.Split('\n'))
             builder
@@ -34,8 +38,10 @@ public class Logger {
     private static LogHandler? Handler;
     public static void AddLogHandler(LogHandler handler) => Handler += handler;
 
-    static Logger() {
-        AddLogHandler((source, level, text, color) => {
+    static Logger()
+    {
+        AddLogHandler((source, level, text, color) =>
+        {
             DateTime logtime = DateTime.Now;
             Console.ForegroundColor = color;
             Console.Write(PrefixNewLines(text, $"{{{logtime}}} {level} [{source}]"));

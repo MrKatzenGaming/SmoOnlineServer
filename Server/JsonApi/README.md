@@ -19,6 +19,7 @@ IP addresses that provide invalid requests or token values, are automatically bl
 ---
 
 Currently available `Type` of requests:
+
 - `Permissions`: lists all permissions the token in use has (this request is always possible and doesn't require an extra permission).
 - `Status`: outputs all Settings, Players and Player properties the token has explicit permissions for.
 - `Command`: passes an command to the CommandHandler and returns its output. Every command needs to be permitted individually.
@@ -27,9 +28,11 @@ Specific settings and commands aren't hardcoded, but the API should automaticall
 The server operator only needs to add the new permissions for the new commands or settings that they want to whitelist to the `settings.json`.
 
 The possible player status permissions are hardcoded though:
+
 - `Status/Players`
 - `Status/Players/ID`
 - `Status/Players/Name`
+- `Status/Players/GameMode`
 - `Status/Players/Kingdom`
 - `Status/Players/Stage`
 - `Status/Players/Scenario`
@@ -44,6 +47,7 @@ The possible player status permissions are hardcoded though:
 ---
 
 Example for the `settings.json`:
+
 ```json
 "JsonApi": {
   "Enabled": true,
@@ -68,11 +72,19 @@ Example for the `settings.json`:
 ---
 
 Example request (e.g. with `./test.sh Command sendall mush`):
+
 ```json
-{"API_JSON_REQUEST":{"Token":"SECRET_TOKEN_12345","Type":"Command","Data":"sendall mush"}}
+{
+  "API_JSON_REQUEST": {
+    "Token": "SECRET_TOKEN_12345",
+    "Type": "Command",
+    "Data": "sendall mush"
+  }
+}
 ```
 
 Example `hexdump -C` response:
+
 ```
 00000000  7b 22 4f 75 74 70 75 74  22 3a 5b 22 53 65 6e 74  |{"Output":["Sent|
 00000010  20 70 6c 61 79 65 72 73  20 74 6f 20 50 65 61 63  | players to Peac|

@@ -24,19 +24,23 @@ PacketType[] reboundPackets = {
 //string lastCapture = ""; //not referenced
 List<TcpClient> clients = new List<TcpClient>();
 
-async Task S(string n, Guid otherId, Guid ownId) {
+async Task S(string n, Guid otherId, Guid ownId)
+{
     Logger logger = new Logger($"Client ({n})");
     TcpClient client = new TcpClient(args[0], 1027);
     clients.Add(client);
     NetworkStream stream = client.GetStream();
     logger.Info("Connected!");
-    async Task<bool> Read(Memory<byte> readMem, int readSize, int readOffset) {
+    async Task<bool> Read(Memory<byte> readMem, int readSize, int readOffset)
+    {
         readSize += readOffset;
-        while (readOffset < readSize) {
+        while (readOffset < readSize)
+        {
             int size = await stream.ReadAsync(readMem[readOffset..readSize]);
-            if (size == 0) {
+            if (size == 0)
+            {
                 // treat it as a disconnect and exit
-                logger.Info($"Socket {client.Client.RemoteEndPoint} disconnected.");
+                logger.NotifyRed($"Socket {client.Client.RemoteEndPoint} disconnected.");
                 return false;
             }
 
@@ -47,11 +51,13 @@ async Task S(string n, Guid otherId, Guid ownId) {
     }
 
     {
-        ConnectPacket connect = new ConnectPacket {
+        ConnectPacket connect = new ConnectPacket
+        {
             ConnectionType = ConnectPacket.ConnectionTypes.Reconnecting,
             ClientName = n
         };
-        PacketHeader coolHeader = new PacketHeader {
+        PacketHeader coolHeader = new PacketHeader
+        {
             Type = PacketType.Connect,
             Id = ownId,
             PacketSize = connect.Size,
@@ -63,22 +69,27 @@ async Task S(string n, Guid otherId, Guid ownId) {
         await stream.WriteAsync(connectOwner.Memory[..(Constants.HeaderSize + connect.Size)]);
         connectOwner.Dispose();
     }
-    
-    while (true) {
+
+    while (true)
+    {
         IMemoryOwner<byte> owner = MemoryPool<byte>.Shared.RentZero(0xFF);
         if (!await Read(owner.Memory, Constants.HeaderSize, 0)) return;
         PacketHeader header = MemoryMarshal.Read<PacketHeader>(owner.Memory.Span);
-        if (header.Size > 0) {
+        if (header.Size > 0)
+        {
             if (!await Read(owner.Memory, header.PacketSize, Constants.HeaderSize)) return;
         }
         PacketType type = header.Type;
-        if (header.Id != otherId || reboundPackets.All(x => x != type)) {
+        if (header.Id != otherId || reboundPackets.All(x => x != type))
+        {
             owner.Dispose();
             continue;
         }
-        if (type == PacketType.Player) {
+        if (type == PacketType.Player)
+        {
 #pragma warning disable CS4014
-            Task.Run(async () => {
+            Task.Run(async () =>
+            {
                 await Task.Delay(1000);
                 header.Id = ownId;
                 MemoryMarshal.Write(owner.Memory.Span[..Constants.HeaderSize], ref header);
@@ -96,7 +107,8 @@ async Task S(string n, Guid otherId, Guid ownId) {
 }
 
 Guid temp = baseOtherId;
-IEnumerable<Task> stuff = Enumerable.Range(0, 7).Select(i => {
+IEnumerable<Task> stuff = Enumerable.Range(0, 7).Select(i =>
+{
     byte[] tmp = temp.ToByteArray();
     tmp[0]++;
     Guid newOwnId = new Guid(tmp);
@@ -104,9 +116,11 @@ IEnumerable<Task> stuff = Enumerable.Range(0, 7).Select(i => {
     temp = newOwnId;
     return task;
 });
-Console.CancelKeyPress += (_, e) => {
+Console.CancelKeyPress += (_, e) =>
+{
     e.Cancel = true;
-    foreach (TcpClient tcpClient in clients) {
+    foreach (TcpClient tcpClient in clients)
+    {
         tcpClient.Close();
     }
     Environment.Exit(0);

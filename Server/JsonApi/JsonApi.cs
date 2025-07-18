@@ -10,7 +10,8 @@ using Shared.Packet;
 namespace Server.JsonApi;
 
 
-public static class JsonApi {
+public static class JsonApi
+{
     public const ushort PACKET_TYPE = 0x5453; // ascii "ST" (0x53 0x54) from preamble, but swapped because of endianness
     public const string PREAMBLE = "{\"API_JSON_REQUEST\":";
 
@@ -23,21 +24,25 @@ public static class JsonApi {
         Socket socket,
         PacketHeader header,
         IMemoryOwner<byte> memory
-    ) {
+    )
+    {
         // check if it is enabled
-        if (!Settings.Instance.JsonApi.Enabled) {
+        if (!Settings.Instance.JsonApi.Enabled)
+        {
             return false;
         }
 
         // check packet type
-        if ((ushort) header.Type != JsonApi.PACKET_TYPE) {
+        if ((ushort)header.Type != JsonApi.PACKET_TYPE)
+        {
             server.Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
             return false;
         }
 
         // check entire header length
         string headerStr = Encoding.UTF8.GetString(memory.Memory.Span[..Constants.HeaderSize].ToArray());
-        if (headerStr != JsonApi.PREAMBLE) {
+        if (headerStr != JsonApi.PREAMBLE)
+        {
             server.Logger.Notify($"Accepted connection for client {socket.RemoteEndPoint}");
             return false;
         }
@@ -45,14 +50,16 @@ public static class JsonApi {
         Context ctx = new Context(server, socket);
 
         // not if there were too many failed attempts in the past
-        if (BlockClients.IsBlocked(ctx)) {
+        if (BlockClients.IsBlocked(ctx))
+        {
             JsonApi.Logger.Info($"Rejected blocked client {socket.RemoteEndPoint}.");
             return true;
         }
 
         // receive & parse JSON
         ApiPacket? p = await ApiPacket.Read(ctx, headerStr);
-        if (p == null) {
+        if (p == null)
+        {
             BlockClients.Fail(ctx);
             return true;
         }
@@ -60,13 +67,15 @@ public static class JsonApi {
         // verify basic request structure & token
         ApiRequest req = p.API_JSON_REQUEST!;
         ctx.request = req;
-        if (!req.IsValid(ctx)) {
+        if (!req.IsValid(ctx))
+        {
             BlockClients.Fail(ctx);
             return true;
         }
 
         // process request
-        if (!await req.Process(ctx)) {
+        if (!await req.Process(ctx))
+        {
             BlockClients.Fail(ctx);
             return true;
         }
