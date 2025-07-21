@@ -109,7 +109,7 @@ async void SyncShineBag()
 Timer timer = new Timer(120000);
 timer.AutoReset = true;
 timer.Enabled = true;
-timer.Elapsed += (_, _) => { SyncShineBag(); };
+timer.Elapsed += (_, _) => { if (!Settings.Instance.Shines.SyncNoSave) SyncShineBag(); };
 timer.Start();
 
 float MarioSize(bool is2d) => is2d ? 180 : 160;
@@ -194,7 +194,7 @@ server.PacketHandler = (c, p) =>
                                 c.Logger.Info("Entered Cascade or later with moon sync disabled, enabling moon sync again");
                                 await Task.Delay(2000);
                                 c.Metadata["disableShineSync"] = false;
-                                await ClientSyncShineBag(c);
+                                if (!Settings.Instance.Shines.SyncNoSave) await ClientSyncShineBag(c);
                             });
                         }
                         break;
@@ -269,7 +269,7 @@ server.PacketHandler = (c, p) =>
                 c.Metadata["lastCostumePacket"] = costumePacket;
                 c.CurrentCostume = costumePacket;
 #pragma warning disable CS4014
-                ClientSyncShineBag(c); //no point logging since entire def has try/catch
+                if (!Settings.Instance.Shines.SyncNoSave) ClientSyncShineBag(c); //no point logging since entire def has try/catch
 #pragma warning restore CS4014
                 c.Metadata["loadedSave"] = true;
                 break;
