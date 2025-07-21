@@ -91,7 +91,8 @@ public class DiscordBot
                 { //these messages happen sometimes, and are of no concern.
                     "Server requested a reconnect",
                     "The remote party closed the WebSocket connection without completing the close handshake",
-                    "without listening to any events related to that intent, consider removing the intent from"
+                    "without listening to any events related to that intent, consider removing the intent from",
+                    "System.Net.Sockets.SocketException (32): Broken pipe"
                 };
                 foreach (string dis in disinterestedMessages)
                 {
