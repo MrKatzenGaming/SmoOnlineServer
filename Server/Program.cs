@@ -756,7 +756,7 @@ CommandHandler.RegisterCommand("shine", args =>
     sync
     send <ShineID> <player/*>
     set [true/false]
-    setNoSave [true/false]
+    setNoAutoSync [true/false]
     include <ShineID>
     exclude <ShineID>";
     if (args.Length < 1)
