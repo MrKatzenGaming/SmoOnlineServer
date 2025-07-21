@@ -109,7 +109,7 @@ async void SyncShineBag()
 Timer timer = new Timer(120000);
 timer.AutoReset = true;
 timer.Enabled = true;
-timer.Elapsed += (_, _) => { if (!Settings.Instance.Shines.SyncNoSave) SyncShineBag(); };
+timer.Elapsed += (_, _) => { if (!Settings.Instance.Shines.NoAutoSync) SyncShineBag(); };
 timer.Start();
 
 float MarioSize(bool is2d) => is2d ? 180 : 160;
@@ -194,7 +194,7 @@ server.PacketHandler = (c, p) =>
                                 c.Logger.Info("Entered Cascade or later with moon sync disabled, enabling moon sync again");
                                 await Task.Delay(2000);
                                 c.Metadata["disableShineSync"] = false;
-                                if (!Settings.Instance.Shines.SyncNoSave) await ClientSyncShineBag(c);
+                                if (!Settings.Instance.Shines.NoAutoSync) await ClientSyncShineBag(c);
                             });
                         }
                         break;
@@ -269,7 +269,7 @@ server.PacketHandler = (c, p) =>
                 c.Metadata["lastCostumePacket"] = costumePacket;
                 c.CurrentCostume = costumePacket;
 #pragma warning disable CS4014
-                if (!Settings.Instance.Shines.SyncNoSave) ClientSyncShineBag(c); //no point logging since entire def has try/catch
+                if (!Settings.Instance.Shines.NoAutoSync) ClientSyncShineBag(c); //no point logging since entire def has try/catch
 #pragma warning restore CS4014
                 c.Metadata["loadedSave"] = true;
                 break;
@@ -289,7 +289,7 @@ server.PacketHandler = (c, p) =>
                 if (playerBag.Contains(shinePacket.ShineId)) break;
                 c.Logger.Info($"Got moon {shinePacket.ShineId}");
                 playerBag.Add(shinePacket.ShineId);
-                if (!Settings.Instance.Shines.SyncNoSave) SyncShineBag();
+                if (!Settings.Instance.Shines.NoAutoSync) SyncShineBag();
                 break;
             }
 
@@ -779,7 +779,7 @@ CommandHandler.RegisterCommand("shine", args =>
             return "Cleared shine bags";
         case "sync" when args.Length == 1:
             SyncShineBag();
-            return "Synced shine bag automatically";
+            return "Synced shine bag manually";
         case "send" when args.Length >= 3:
             if (int.TryParse(args[1], out int id))
             {
@@ -808,13 +808,13 @@ CommandHandler.RegisterCommand("shine", args =>
 
                 return optionUsage;
             }
-        case "setNoSave" when args.Length == 2:
+        case "setNoAutoSync" when args.Length == 2:
             {
                 if (bool.TryParse(args[1], out bool result))
                 {
-                    Settings.Instance.Shines.SyncNoSave = result;
+                    Settings.Instance.Shines.NoAutoSync = result;
                     Settings.SaveSettings();
-                    return result ? "Disable shine save" : "Enable shine save";
+                    return result ? "Disabled automatic shine sync" : "Enabled automatic shine sync";
                 }
 
                 return optionUsage;

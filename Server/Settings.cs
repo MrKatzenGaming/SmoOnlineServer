@@ -106,7 +106,7 @@ public class Settings
     public class ShineTable
     {
         public bool Enabled { get; set; } = true;
-        public bool SyncNoSave { get; set; } = false;
+        public bool NoAutoSync { get; set; } = false;
         public ISet<int> Excluded { get; set; } = new SortedSet<int> { 496 };
         public bool ClearOnNewSaves { get; set; } = false;
     }
