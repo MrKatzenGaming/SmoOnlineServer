@@ -6,23 +6,29 @@ using Shared;
 
 namespace Server;
 
-public class Settings {
+public class Settings
+{
     public static Settings Instance = new Settings();
     private static readonly Logger Logger = new Logger("Settings");
     public static Action? LoadHandler;
 
-    static Settings() {
+    static Settings()
+    {
         LoadSettings();
     }
 
-    public static void LoadSettings() {
-        if (File.Exists("settings.json")) {
+    public static void LoadSettings()
+    {
+        if (File.Exists("settings.json"))
+        {
             string text = File.ReadAllText("settings.json");
-            try {
+            try
+            {
                 Instance = JsonConvert.DeserializeObject<Settings>(text, new StringEnumConverter(new CamelCaseNamingStrategy())) ?? Instance;
                 Logger.Info("Loaded settings from settings.json");
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Logger.Warn($"Failed to load settings.json: {e}");
             }
         }
@@ -30,12 +36,15 @@ public class Settings {
         LoadHandler?.Invoke();
     }
 
-    public static void SaveSettings(bool silent = false) {
-        try {
+    public static void SaveSettings(bool silent = false)
+    {
+        try
+        {
             File.WriteAllText("settings.json", JsonConvert.SerializeObject(Instance, Formatting.Indented, new StringEnumConverter(new CamelCaseNamingStrategy())));
             if (!silent) { Logger.Info("Saved settings to settings.json"); }
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
             Logger.Error($"Failed to save settings.json {e}");
         }
     }
@@ -49,17 +58,20 @@ public class Settings {
     public PersistShinesTable PersistShines { get; set; } = new PersistShinesTable();
     public JsonApiTable JsonApi { get; set; } = new JsonApiTable();
 
-    public class ServerTable {
+    public class ServerTable
+    {
         public string Address { get; set; } = IPAddress.Any.ToString();
         public ushort Port { get; set; } = 1027;
         public ushort MaxPlayers { get; set; } = 8;
     }
 
-    public class ScenarioTable {
+    public class ScenarioTable
+    {
         public bool MergeEnabled { get; set; } = false;
     }
 
-    public class BanListTable {
+    public class BanListTable
+    {
         public bool Enabled { get; set; } = false;
         public ISet<Guid> Players { get; set; } = new SortedSet<Guid>();
         public ISet<string> IpAddresses { get; set; } = new SortedSet<string>();
@@ -67,13 +79,15 @@ public class Settings {
         public ISet<sbyte> GameModes { get; set; } = new SortedSet<sbyte>();
     }
 
-    public class FlipTable {
+    public class FlipTable
+    {
         public bool Enabled { get; set; } = true;
         public ISet<Guid> Players { get; set; } = new SortedSet<Guid>();
         public FlipOptions Pov { get; set; } = FlipOptions.Both;
     }
 
-    public class DiscordTable {
+    public class DiscordTable
+    {
         public bool Enabled { get; set; } = false;
         public string? Token { get; set; }
         public string Prefix { get; set; } = "$";
@@ -81,7 +95,7 @@ public class Settings {
         //This funkyness is to migrate the JSON "LogChannel" to "AdminChannel"
         public string? AdminChannel { get; set; }
         [JsonProperty(PropertyName = "LogChannel")]
-        public string? LogChannel 
+        public string? LogChannel
         {
             set => AdminChannel = value;
         }
@@ -89,8 +103,10 @@ public class Settings {
         public bool FilterOutNonIssueWarnings { get; set; } = true;
     }
 
-    public class ShineTable {
+    public class ShineTable
+    {
         public bool Enabled { get; set; } = true;
+        public bool SyncNoSave { get; set; } = false;
         public ISet<int> Excluded { get; set; } = new SortedSet<int> { 496 };
         public bool ClearOnNewSaves { get; set; } = false;
     }

@@ -289,7 +289,7 @@ server.PacketHandler = (c, p) =>
                 if (playerBag.Contains(shinePacket.ShineId)) break;
                 c.Logger.Info($"Got moon {shinePacket.ShineId}");
                 playerBag.Add(shinePacket.ShineId);
-                SyncShineBag();
+                if (!Settings.Instance.Shines.SyncNoSave) SyncShineBag();
                 break;
             }
 
@@ -756,6 +756,7 @@ CommandHandler.RegisterCommand("shine", args =>
     sync
     send <ShineID> <player/*>
     set [true/false]
+    setNoSave [true/false]
     include <ShineID>
     exclude <ShineID>";
     if (args.Length < 1)
@@ -803,6 +804,17 @@ CommandHandler.RegisterCommand("shine", args =>
                     Settings.Instance.Shines.Enabled = result;
                     Settings.SaveSettings();
                     return result ? "Enabled shine sync" : "Disabled shine sync";
+                }
+
+                return optionUsage;
+            }
+        case "setNoSave" when args.Length == 2:
+            {
+                if (bool.TryParse(args[1], out bool result))
+                {
+                    Settings.Instance.Shines.SyncNoSave = result;
+                    Settings.SaveSettings();
+                    return result ? "Disable shine save" : "Enable shine save";
                 }
 
                 return optionUsage;
